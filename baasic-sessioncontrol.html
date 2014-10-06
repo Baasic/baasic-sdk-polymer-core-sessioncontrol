@@ -1,0 +1,64 @@
+﻿<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../baasic-globals/globals-import.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../baasic-ajax/baasic-ajax.html">
+<link rel="import" href="../core-signals/core-signals.html">
+<link rel="import" href="../baasic-globals/baasic-globals.html">
+
+<polymer-element name="baasic-sessioncontrol" attributes="interval">
+    <template>
+        <baasic-globals id="globals"></baasic-globals>
+        <paper-dialog heading="Session is about to expire" id="warningDialog">
+            Your session is about to expire. Please click the OK button to referesh your session, otherwise you will be logged off automatically.
+            <paper-button label="Close" dismissive></paper-button>
+            <paper-button label="OK" on-click="{{refreshSession}}" affirmative></paper-button>
+        </paper-dialog>
+        <baasic-ajax id="axRoles"
+                     url="{{baseUrl}}/{{version}}/{{application}}/role/?rpp=100&sort=Name|asc"
+                     handleas="json"
+                     contenttype="application/json"
+                     method="GET"></baasic-ajax>
+    </template>
+    <script>
+        Polymer('baasic-sessioncontrol', {
+            baseUrl: '',
+            version: '',
+            application: '',
+            signalSent: false,
+            warningDisplayed: false,
+            //interval in seconds indicating how frequently to fire the check, by default check every minute
+            interval: 60,
+            //second interval inside which the warning should appear, by default warn 5 minutes before logout
+            warningInterval: 300,
+            ready: function () {
+                this.globals = this.$.globals;
+                if (!this.baseUrl) this.baseUrl = this.globals.config.baseUrl;
+                if (!this.version) this.version = this.globals.config.version;
+                if (!this.application) this.application = this.globals.config.application;
+                setInterval(this.checkSession.bind(this), this.interval * 1000);
+            },
+            checkSession: function (t) {
+                var baasicUser = Baasic.Cache.getItem('baasicUser');
+                if (baasicUser && baasicUser.expiresAbsolute) {
+                    if (!this.warningDisplayed && (new Date(baasicUser.expiresAbsolute) - (new Date())) < (this.warningInterval * 1000)) {
+                        this.warningDisplayed = true;
+                        this.$.warningDialog.toggle();
+                    }
+                }
+                else {
+                    //send signal to other elements if user is not logged in anymore
+                    if (this.warningDisplayed && !this.signalSent) {
+                        this.signalSent = true;
+                        this.fire('core-signal', { name: 'user-login', data: { baasicUser: {} } });
+                    }
+                }
+            },
+            refreshSession: function () {
+                //call an API method to renew the token
+                this.warningDisplayed = false;
+                this.signalSent = false;
+                this.$.axRoles.go();
+            }
+        });
+    </script>
+</polymer-element>
