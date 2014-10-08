@@ -1,11 +1,26 @@
-﻿<link rel="import" href="../polymer/polymer.html">
+﻿<!--
+Copyright (c) 2014 Mono d.o.o. All rights reserved.
+Code distributed by Mono as a part of the Baasic project
+-->
+
+<!--
+@group Baasic Polymer Elements
+
+The `baasic-sessioncontrol` element provides support for controlling session expiration and syncing the state of the page controls with the user's authentication status.
+    <baasic-sessioncontrol application="webcomponents"></baasic-sessioncontrol>
+
+@element baasic-sessioncontrol
+@status beta
+@homepage www.baasic.com
+-->
+<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../baasic-globals/globals-import.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../baasic-ajax/baasic-ajax.html">
 <link rel="import" href="../core-signals/core-signals.html">
 <link rel="import" href="../baasic-globals/baasic-globals.html">
 
-<polymer-element name="baasic-sessioncontrol" attributes="interval">
+<polymer-element name="baasic-sessioncontrol" attributes="baseUrl version application interval warningInterval">
     <template>
         <baasic-globals id="globals"></baasic-globals>
         <paper-dialog heading="Session is about to expire" id="warningDialog">
@@ -21,15 +36,48 @@
     </template>
     <script>
         Polymer('baasic-sessioncontrol', {
+            /**
+             * The URL target of the Baasic service. Can be used with baasic-globals element to set the property for all baasic elements in one place.
+             * 
+             * @attribute baseUrl
+             * @type string
+             * @default ''
+             */
             baseUrl: '',
+            /**
+             * The versione Baasic service. Can be used with baasic-globals element to set the property for all baasic elements in one place.
+             * 
+             * @attribute version
+             * @type string
+             * @default ''
+             */
             version: '',
+            /**
+             * The name of the Baasic application, unique per user. Can be used with baasic-globals element to set the property for all baasic elements in one place.
+             * 
+             * @attribute application
+             * @type string
+             * @default ''
+             */
             application: '',
+            /**
+             * Interval in seconds indicating how frequently to fire the check, by default check every minute.
+             * 
+             * @attribute application
+             * @type int
+             * @default 60
+             */
+            interval: 60,
+            /**
+             * Interval in seconds inside which the warning should appear, by default warn 5 minutes before logout,
+             * 
+             * @attribute application
+             * @type int
+             * @default 60
+             */
+            warningInterval: 300,
             signalSent: false,
             warningDisplayed: false,
-            //interval in seconds indicating how frequently to fire the check, by default check every minute
-            interval: 60,
-            //second interval inside which the warning should appear, by default warn 5 minutes before logout
-            warningInterval: 300,
             ready: function () {
                 this.globals = this.$.globals;
                 if (!this.baseUrl) this.baseUrl = this.globals.config.baseUrl;
@@ -54,7 +102,7 @@
                 }
             },
             refreshSession: function () {
-                //call an API method to renew the token
+                //call an arbitrary API method to renew the token
                 this.warningDisplayed = false;
                 this.signalSent = false;
                 this.$.axRoles.go();
