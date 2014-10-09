@@ -20,7 +20,7 @@ The `baasic-sessioncontrol` element provides support for controlling session exp
 <link rel="import" href="../core-signals/core-signals.html">
 <link rel="import" href="../baasic-globals/baasic-globals.html">
 
-<polymer-element name="baasic-sessioncontrol" attributes="baseUrl version application interval warningInterval">
+<polymer-element name="baasic-sessioncontrol" attributes="baseUrl version application interval warningInterval" hidden>
     <template>
         <baasic-globals id="globals"></baasic-globals>
         <paper-dialog heading="Session is about to expire" id="warningDialog">
@@ -73,7 +73,7 @@ The `baasic-sessioncontrol` element provides support for controlling session exp
              * 
              * @attribute application
              * @type int
-             * @default 60
+             * @default 300
              */
             warningInterval: 300,
             signalSent: false,
