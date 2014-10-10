@@ -25,8 +25,8 @@ The `baasic-sessioncontrol` element provides support for controlling session exp
         <baasic-globals id="globals"></baasic-globals>
         <paper-dialog heading="Session is about to expire" id="warningDialog">
             Your session is about to expire. Please click the OK button to referesh your session, otherwise you will be logged off automatically.
-            <paper-button label="Close" dismissive></paper-button>
-            <paper-button label="OK" on-click="{{refreshSession}}" affirmative></paper-button>
+            <paper-button dismissive>Close</paper-button>
+            <paper-button on-click="{{refreshSession}}" affirmative>OK</paper-button>
         </paper-dialog>
         <baasic-ajax id="axRoles"
                      url="{{baseUrl}}/{{version}}/{{application}}/role/?rpp=100&sort=Name|asc"
