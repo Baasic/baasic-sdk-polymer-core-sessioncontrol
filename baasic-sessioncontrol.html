@@ -20,7 +20,7 @@ The `baasic-sessioncontrol` element provides support for controlling session exp
 <link rel="import" href="../core-signals/core-signals.html">
 <link rel="import" href="../baasic-globals/baasic-globals.html">
 
-<polymer-element name="baasic-sessioncontrol" attributes="baseUrl version application interval warningInterval" hidden>
+<polymer-element name="baasic-sessioncontrol" attributes="baseUrl version application interval warningInterval">
     <template>
         <baasic-globals id="globals"></baasic-globals>
         <paper-dialog heading="Session is about to expire" id="warningDialog">
@@ -78,6 +78,7 @@ The `baasic-sessioncontrol` element provides support for controlling session exp
             warningInterval: 300,
             signalSent: false,
             warningDisplayed: false,
+            hasBeenloggedIn: false,
             ready: function () {
                 this.globals = this.$.globals;
                 if (!this.baseUrl) this.baseUrl = this.globals.config.baseUrl;
@@ -88,6 +89,7 @@ The `baasic-sessioncontrol` element provides support for controlling session exp
             checkSession: function (t) {
                 var baasicUser = Baasic.Cache.getItem('baasicUser');
                 if (baasicUser && baasicUser.expiresAbsolute) {
+                    this.hasBeenloggedIn = true;
                     if (!this.warningDisplayed && (new Date(baasicUser.expiresAbsolute) - (new Date())) < (this.warningInterval * 1000)) {
                         this.warningDisplayed = true;
                         this.$.warningDialog.toggle();
@@ -95,7 +97,7 @@ The `baasic-sessioncontrol` element provides support for controlling session exp
                 }
                 else {
                     //send signal to other elements if user is not logged in anymore
-                    if (this.warningDisplayed && !this.signalSent) {
+                    if (this.hasBeenloggedIn && !this.signalSent) {
                         this.signalSent = true;
                         this.fire('core-signal', { name: 'user-login', data: { baasicUser: {} } });
                     }
