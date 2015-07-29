@@ -1,12 +1,5 @@
 {
   "name": "baasic-sessioncontrol",
-  "dependencies": {
-    "polymer": "Polymer/polymer#>=0.4.2",
-    "paper-dialog": "Polymer/paper-dialog#>=0.4.2",
-    "core-signals": "Polymer/core-signals#>=0.4.2",
-    "baasic-ajax": "Baasic/baasic-sdk-polymer-core-ajax#>=0.1.0",
-    "baasic-globals": "Baasic/baasic-sdk-polymer-core-globals#>=0.1.0"
-  },
   "description": "Baasic Web component that monitors session state.",
   "keywords": [
     "polymer",
@@ -15,13 +8,28 @@
     "membership",
     "session"
   ],
+  "main": "baasic-sessioncontrol.html",
   "license": "MIT",
   "homepage": "https://github.com/baasic/baasic-sdk-polymer-core-sessioncontrol",
   "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ]
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0",
+    "paper-dialog": "PolymerElements/paper-dialog#^1.0.0",
+    "iron-signals": "PolymerElements/iron-signals#^1.0.0",
+    "baasic-globals": "Baasic/baasic-sdk-polymer-core-globals#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-flex-layout": "polymerelements/iron-flex-layout#^1.0.0",
+    "iron-image": "polymerelements/iron-image#^1.0.0",
+    "paper-styles": "polymerelements/paper-styles#^1.0.0",
+    "web-component-tester": "*",
+    "test-fixture": "polymerelements/test-fixture#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "sinonjs": "blittle/sinon.js#^1.14.1"
+  }
 }

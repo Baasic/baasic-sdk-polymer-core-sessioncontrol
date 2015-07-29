@@ -1,0 +1,100 @@
+﻿<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+    <script src="../../sinonjs/sinon.js"></script>
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../../test-fixture/test-fixture.html">
+    <link rel="import" href="../baasic-sessioncontrol.html">
+  </head>
+  <body>
+
+    <test-fixture id="MainFixture">
+        <template>
+            <baasic-sessioncontrol></baasic-sessioncontrol>
+        </template>
+    </test-fixture>
+
+    <script>
+        describe('<baasic-sessioncontrol>', function () {
+            var myEl;
+            var clock;
+            var localuser = {};
+
+            function getItem() {
+                return localuser;
+            }
+
+            function setItem(item) {
+                localuser = item;
+            }
+
+
+            before(function () {
+                var cacheReadStub = sinon.stub(Baasic.Cache, 'getItem', getItem); 
+                clock = sinon.useFakeTimers();
+            });
+
+            after(function () {
+                //Baasic.Cache.getItem.restore();
+                clock.restore();
+            });
+
+            beforeEach(function () {
+                myEl = fixture('MainFixture');
+            });
+
+            describe('if user is not logged in', function () {
+                it('should display no warnings, even after check interval expires', function () {
+                    expect(Baasic.Cache.getItem('baasicUser')).to.be.empty;
+                    clock.tick(500000);
+                    expect(myEl._warningDisplayed).to.be.false;
+                    
+                });
+            });
+
+            describe('if user was logged in and session expired', function (done) {
+                it('should fire a signal to other elements', function (done) {
+                    myEl.addEventListener('iron-signal', function (event) {
+                        expect(event.detail.name).to.be.equal('user-login');
+                        done();
+                    });
+                    myEl._hasBeenloggedIn = true;
+                    clock.tick(60000);
+                    expect(myEl._signalSent).to.be.true;
+                });
+            });
+
+            describe('if user is logged in and session is about to expire', function () {
+                before(function () {
+                    setItem({ username: 'testuser', expiresAbsolute: new Date(new Date().getTime()) });
+                });
+
+                it('should display a warning and fire a signal to other elements', function () {
+                    myEl._hasBeenloggedIn = true;
+                    clock.tick(600000);
+                    expect(myEl._warningDisplayed).to.be.true;
+                });
+            });
+
+
+
+        });
+    </script>
+
+  </body>
+</html>
