@@ -28,8 +28,8 @@ The `baasic-sessioncontrol` element provides support for controlling session exp
         <baasic-globals id="globals"></baasic-globals>
         <paper-dialog heading="Session is about to expire" id="warningDialog">
             Your session is about to expire. Please click the OK button to referesh your session, otherwise you will be logged off automatically.
-            <paper-button dismissive>Close</paper-button>
-            <paper-button on-click="{{refreshSession}}" affirmative>OK</paper-button>
+            <paper-button dialog-dismiss>Close</paper-button>
+            <paper-button on-click="refreshSession" dialog-confirm>OK</paper-button>
         </paper-dialog>
     </template>
 
@@ -55,7 +55,6 @@ The `baasic-sessioncontrol` element provides support for controlling session exp
         */
         warningInterval: { type: Number, value: 300, notify: true }
     },
-    _warningInterval: 300,
     _signalSent: false,
     _warningDisplayed: false,
     _hasBeenloggedIn: false,
@@ -69,7 +68,7 @@ The `baasic-sessioncontrol` element provides support for controlling session exp
         var baasicUser = Baasic.Cache.getItem('baasicUser');
         if (baasicUser && baasicUser.expiresAbsolute) {
             this._hasBeenloggedIn = true;
-            if (!this._warningDisplayed && (new Date(baasicUser.expiresAbsolute) - (new Date())) < (this._warningInterval * 1000)) {
+            if (!this._warningDisplayed && (new Date(baasicUser.expiresAbsolute) - (new Date())) < (this.warningInterval * 1000)) {
                 this._warningDisplayed = true;
                 this.$.warningDialog.toggle();
             }
