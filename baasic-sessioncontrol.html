@@ -1,9 +1,6 @@
 <!--
 @license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Copyright (c) 2015 Mono d.o.o. All rights reserved.
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
@@ -25,11 +22,13 @@ The `baasic-sessioncontrol` element provides support for controlling session exp
 <dom-module id="baasic-sessioncontrol">
 
     <template>
-        <baasic-globals id="globals"></baasic-globals>
-        <paper-dialog heading="Session is about to expire" id="warningDialog">
-            Your session is about to expire. Please click the OK button to referesh your session, otherwise you will be logged off automatically.
-            <paper-button dialog-dismiss>Close</paper-button>
-            <paper-button on-click="refreshSession" dialog-confirm>OK</paper-button>
+        <paper-dialog id="warningDialog">
+            <h2>Session is about to expire</h2>
+            <p>Your session is about to expire. Please click the OK button to referesh your session, otherwise you will be logged off automatically.</p>
+            <div class="buttons">
+                <paper-button dialog-dismiss>Close</paper-button>
+                <paper-button on-click="refreshSession" dialog-confirm>OK</paper-button>
+            </div>
         </paper-dialog>
     </template>
 
@@ -37,60 +36,60 @@ The `baasic-sessioncontrol` element provides support for controlling session exp
 
 <script>
 
-  Polymer({
-    /**
-    * Fired when a change in user login status happens (log in or log out). Holds user information (baasicUser) that can be queried.
-    *
-    * @event user-login
-    */
-    is: 'baasic-sessioncontrol',
-    behaviors: [Baasic.Ajax, Baasic.Config],
-    properties: {
+    Polymer({
         /**
-        * Interval in seconds indicating how frequently to fire the check, by default check every minute.
+        * Fired when a change in user login status happens (log in or log out). Holds user information (baasicUser) that can be queried.
+        *
+        * @event user-login
         */
-        interval: { type: Number, value: 60, notify: true },
+        is: 'baasic-sessioncontrol',
+        behaviors: [Baasic.Ajax, Baasic.Config],
+        properties: {
+            /**
+            * Interval in seconds indicating how frequently to fire the check, by default check every minute.
+            */
+            interval: { type: Number, value: 60, notify: true },
+            /**
+            * Interval in seconds inside which the warning should appear, by default warn 5 minutes before logout.
+            */
+            warningInterval: { type: Number, value: 300, notify: true }
+        },
+        _signalSent: false,
+        _warningDisplayed: false,
+        _hasBeenloggedIn: false,
+        ready: function () {
+            setInterval(this.checkSession.bind(this), this.interval * 1000);
+        },
         /**
-        * Interval in seconds inside which the warning should appear, by default warn 5 minutes before logout.
+        * Triggered every 'interval' seconds to check if the session has expired. If the user has been logged in, and after interval expires is not, a warning is displayed. When the user is founf to be logged of, a signal has been fired to notify other elements to redraw their UIs to reflect that.
         */
-        warningInterval: { type: Number, value: 300, notify: true }
-    },
-    _signalSent: false,
-    _warningDisplayed: false,
-    _hasBeenloggedIn: false,
-    ready: function () {
-        setInterval(this.checkSession.bind(this), this.interval * 1000);
-    },
-    /**
-    * Triggered every 'interval' seconds to check if the session has expired. If the user has been logged in, and after interval expires is not, a warning is displayed. When the user is founf to be logged of, a signal has been fired to notify other elements to redraw their UIs to reflect that.
-    */
-    checkSession: function (t) {
-        var baasicUser = Baasic.Cache.getItem('baasicUser');
-        if (baasicUser && baasicUser.expiresAbsolute) {
-            this._hasBeenloggedIn = true;
-            if (!this._warningDisplayed && (new Date(baasicUser.expiresAbsolute) - (new Date())) < (this.warningInterval * 1000)) {
-                this._warningDisplayed = true;
-                this.$.warningDialog.toggle();
+        checkSession: function (t) {
+            var baasicUser = Baasic.Cache.getItem('baasicUser');
+            if (baasicUser && baasicUser.expiresAbsolute) {
+                this._hasBeenloggedIn = true;
+                if (!this._warningDisplayed && (new Date(baasicUser.expiresAbsolute) - (new Date())) < (this.warningInterval * 1000)) {
+                    this._warningDisplayed = true;
+                    this.$.warningDialog.toggle();
+                }
             }
-        }
-        else {
-            //send signal to other elements if user is not logged in anymore
-            if (this._hasBeenloggedIn && !this._signalSent) {
-                this._signalSent = true;
-                this.fire('iron-signal', { name: 'user-login', data: { baasicUser: {} } });
+            else {
+                //send signal to other elements if user is not logged in anymore
+                if (this._hasBeenloggedIn && !this._signalSent) {
+                    this._signalSent = true;
+                    this.fire('iron-signal', { name: 'user-login', data: { baasicUser: {} } });
+                }
             }
+        },
+        /**
+        * Called at the click of the OK button to refresh session by calling an arbitrary API method. This renews the token so the session does not expire imediatelly.
+        */
+        refreshSession: function () {
+            //call an arbitrary API method to renew the token
+            this._warningDisplayed = false;
+            this._signalSent = false;
+            Baasic.Ajax.go(this.baseUrl + '/' + this.version + "/" + this.application + '/roles/?rpp=100&sort=Name|asc');
         }
-    },
-    /**
-    * Called at the click of the OK button to refresh session by calling an arbitrary API method. This renews the token so the session does not expire imediatelly.
-    */
-    refreshSession: function () {
-        //call an arbitrary API method to renew the token
-        this._warningDisplayed = false;
-        this._signalSent = false;
-        Baasic.Ajax.go(this.baseUrl + '/' + this.version + "/" + this.application + '/roles/?rpp=100&sort=Name|asc');
-    }
 
-  });
+    });
 
 </script>
